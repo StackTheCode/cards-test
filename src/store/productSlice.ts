@@ -6,6 +6,7 @@ interface Product {
   price: number;
   description: string;
   image: string;
+  isCreated?: boolean; // Flag to identify created products
 }
 
 interface ProductState {
@@ -13,7 +14,7 @@ interface ProductState {
 }
 
 const initialState: ProductState = {
-  products: [],
+  products: [], // Store products here
 };
 
 const productSlice = createSlice({
@@ -21,17 +22,26 @@ const productSlice = createSlice({
   initialState,
   reducers: {
     setProducts(state, action: PayloadAction<Product[]>) {
-      state.products = action.payload;
+      // Merge new fetched products with existing ones
+      const fetchedProducts = action.payload;
+      const existingProductIds = state.products.map((p) => p.id);
+
+      // Add only new products that aren't already in the state
+      const newProducts = fetchedProducts.filter(
+        (p) => !existingProductIds.includes(p.id)
+      );
+
+      state.products = [...state.products, ...newProducts];
     },
     addProduct(state, action: PayloadAction<Product>) {
-      state.products.unshift(action.payload); // Add new product at the top
+      state.products = [{ ...action.payload, isCreated: true }, ...state.products];
     },
     deleteProduct(state, action: PayloadAction<number>) {
       state.products = state.products.filter(
-        (product) => product.id !== action.payload)
+        (product) => product.id !== action.payload
+      );
     },
-  },
+  }
 });
-
-export const { addProduct,setProducts,deleteProduct } = productSlice.actions;
+export const { setProducts, addProduct, deleteProduct } = productSlice.actions;
 export default productSlice.reducer;

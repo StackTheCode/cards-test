@@ -26,16 +26,21 @@ const CreateProductPage: React.FC = () => {
       image: Yup.string().url("Must be a valid URL").required("Image is required"),
     }),
     onSubmit: (values) => {
-      dispatch(
-        addProduct({
-          id: Date.now(),
-          title: values.title,
-          price: parseFloat(values.price),
-          description: values.description,
-          image: values.image,
-        })
-      );
-      navigate("/products");
+      const newProduct = {
+        id: Date.now(),
+        title: values.title,
+        price: parseFloat(values.price),
+        description: values.description,
+        image: values.image,
+        created:true
+      };
+
+        // Dispatch to add the product
+    dispatch(addProduct(newProduct));
+
+    // Navigate to products page
+    navigate("/products");
+      
     },
   });
 

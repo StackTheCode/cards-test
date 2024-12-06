@@ -1,5 +1,8 @@
-import React, { useState,useEffect } from "react";
-import ProductCard from "./ProductCard"; // Импортируйте компонент карточки
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import ProductCard from "./ProductCard";
+import { RootState, AppDispatch } from "../store/productsStore";
+import { deleteProduct,setProducts } from "../store/productSlice";
 
 interface Product {
   id: number;
@@ -7,35 +10,34 @@ interface Product {
   price: number;
   description: string;
   image: string;
+
 }
 
 const ProductList: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [products, setProducts] = useState<Product[]>([]); // Загрузка продуктов с API
-  const [createdProducts, setCreatedProducts] = useState<Product[]>([]); // Для созданных продуктов
-  const [likedProducts, setLikedProducts] = useState<number[]>([]); // Храним ID лайкнутых продуктов
-  const [filter, setFilter] = useState<"all" | "favorites" | "created">("all"); // Фильтр
+  const products = useSelector((state: RootState) => state.products.products); // Fetch products from the store
+  const [likedProducts, setLikedProducts] = useState<number[]>([]); // For liked products
+  const [filter, setFilter] = useState<"all" | "favorites" | "created">("all"); // Filter state
+
+
   useEffect(() => {
-    const fetchProducts= async() =>{
+    // Fetch products when component mounts
+    const fetchProducts = async () => {
       try {
-        const response = await fetch('https://fakestoreapi.com/products');
-        
-        const data =await response.json();
-        setProducts(data)
-        if(!response.ok){
-          throw new Error("Fetching failure")
+        const response = await fetch("https://fakestoreapi.com/products");
+        const data = await response.json();
+        if (response.ok) {
+          dispatch(setProducts(data)); // Dispatch products to Redux store
+        } else {
+          throw new Error("Failed to fetch products");
         }
-       
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-
-    }
-    
-  fetchProducts();
-  }, []);
-
-  
+    };
+    fetchProducts();
+  }, [dispatch]);
 
   const handleLike = (id: number) => {
     setLikedProducts((prevLiked) =>
@@ -44,24 +46,22 @@ const ProductList: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
-    setLikedProducts((prevLiked) => prevLiked.filter((productId) => productId !== id)); // Удаляем из избранного, если удалена карточка
-    setCreatedProducts((prevProducts) => prevProducts.filter((product) => product.id !== id))
+    // Dispatch delete action to remove product from store
+    dispatch(deleteProduct(id));
+    setLikedProducts((prevLiked) => prevLiked.filter((productId) => productId !== id)); // Remove from favorites if deleted
   };
 
-  const handleAddProduct = (newProduct:Product) =>{
-setProducts((prevProducts) => [newProduct,...prevProducts])
-setCreatedProducts((prevCreated) => [newProduct,...prevCreated])
-  } 
+ 
 
-  const filteredProducts =
+  const filteredProducts = 
   filter === "all"
-    ? products
+    ? products // All products
     : filter === "favorites"
     ? products.filter((product) => likedProducts.includes(product.id))
-    : createdProducts;
-
-  return (
+    : filter === "created"
+    ? products.filter((product) => product.isCreated) // Only "created" products
+    : [];
+    return(
     <div>
       <div className="mb-4 flex items-center justify-center mt-6 py-5 flex-row gap-6">
         <button
