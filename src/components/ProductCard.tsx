@@ -1,4 +1,4 @@
-import Reac  from "react";
+
 import { useNavigate } from "react-router-dom";
 interface ProductCardProps {
   id: number;
