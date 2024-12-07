@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import Reac  from "react";
 import { useNavigate } from "react-router-dom";
 interface ProductCardProps {
   id: number;
@@ -8,6 +8,7 @@ interface ProductCardProps {
   image: string;
   onLike: (id: number) => void;
   onDelete: (id: number) => void;
+  isLiked:boolean
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -18,11 +19,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   image,
   onLike,
   onDelete,
+  isLiked
 }) => {
-  const [liked, setLiked] = useState<boolean>(false);
+  
 const navigate = useNavigate();
+
   const handleLike = () => {
-    setLiked(!liked); // Меняем локальное состояние liked
+    
     onLike(id); // Уведомляем родителя о клике
   };
   
@@ -45,10 +48,10 @@ navigate(`/products/${id}`);
           <button
             onClick={handleLike}
             className={`text-xl transition-transform duration-200 ${
-              liked ? "text-red-500 scale-110" : "text-gray-500"
+              isLiked ? "text-red-500 scale-110" : "text-gray-500"
             }`}
           >
-               {liked ? "❤️" : "🤍"} 
+               {isLiked ? "❤️" : "🤍"} 
           </button>
           <button
             onClick={handleDelete}

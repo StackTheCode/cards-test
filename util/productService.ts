@@ -1,4 +1,12 @@
-export const createProduct = async (productData) => {
+import { useDispatch } from "react-redux";
+import {setProducts} from '../src/store/productSlice'
+export const createProduct = async (productData:{
+    title: string;
+    price: number;
+    description: string;
+    image: string;
+    isCreated: boolean;
+}) => {
     try {
       const response = await fetch("https://fakestoreapi.com/products", {
         method: "POST",
@@ -14,4 +22,17 @@ export const createProduct = async (productData) => {
       throw error;
     }
   };
-  
+  export const fetchProducts = async () => {
+    const dispatch =useDispatch();
+    try {
+      const response = await fetch("https://fakestoreapi.com/products");
+      const data = await response.json();
+      if (response.ok) {
+        dispatch(setProducts(data)); // Dispatch products to Redux store
+      } else {
+        throw new Error("Failed to fetch products");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };

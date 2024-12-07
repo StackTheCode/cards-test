@@ -2,55 +2,36 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import ProductCard from "./ProductCard";
 import { RootState, AppDispatch } from "../store/productsStore";
-import { deleteProduct,setProducts } from "../store/productSlice";
+import {fetchProducts} from '../../util/productService'
+import { deleteProduct, toggleLike } from "../store/productSlice";
+import { useNavigate } from "react-router-dom";
 
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  image: string;
-
-}
 
 const ProductList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-
+const navigate = useNavigate();
   const products = useSelector((state: RootState) => state.products.products); // Fetch products from the store
-  const [likedProducts, setLikedProducts] = useState<number[]>([]); // For liked products
+  const likedProducts = useSelector((state:RootState)=> state.products.likedProducts)// For liked products
   const [filter, setFilter] = useState<"all" | "favorites" | "created">("all"); // Filter state
 
 
   useEffect(() => {
     // Fetch products when component mounts
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("https://fakestoreapi.com/products");
-        const data = await response.json();
-        if (response.ok) {
-          dispatch(setProducts(data)); // Dispatch products to Redux store
-        } else {
-          throw new Error("Failed to fetch products");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchProducts();
   }, [dispatch]);
 
   const handleLike = (id: number) => {
-    setLikedProducts((prevLiked) =>
-      prevLiked.includes(id) ? prevLiked.filter((productId) => productId !== id) : [...prevLiked, id]
-    );
+  dispatch(toggleLike(id));
   };
 
   const handleDelete = (id: number) => {
-    // Dispatch delete action to remove product from store
+
     dispatch(deleteProduct(id));
-    setLikedProducts((prevLiked) => prevLiked.filter((productId) => productId !== id)); // Remove from favorites if deleted
   };
 
+  const redirect = () =>{
+    navigate(`/create-product`)
+  }
  
 
   const filteredProducts = 
@@ -59,7 +40,7 @@ const ProductList: React.FC = () => {
     : filter === "favorites"
     ? products.filter((product) => likedProducts.includes(product.id))
     : filter === "created"
-    ? products.filter((product) => product.isCreated) // Only "created" products
+    ? products.filter((product) => product.isCreated === true) // Ensure true is explicitly checked
     : [];
     return(
     <div>
@@ -82,6 +63,14 @@ const ProductList: React.FC = () => {
         >
           Created
         </button>
+
+        <button
+          onClick={redirect}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200  "
+          
+        >
+          Create a product
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -95,6 +84,7 @@ const ProductList: React.FC = () => {
             image={product.image}
             onLike={handleLike}
             onDelete={handleDelete}
+            isLiked={ likedProducts.includes(product.id)}
           />
         ))}
       </div>

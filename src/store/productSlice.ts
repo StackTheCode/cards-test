@@ -11,10 +11,12 @@ interface Product {
 
 interface ProductState {
   products: Product[];
+  likedProducts: number[];
 }
 
 const initialState: ProductState = {
-  products: [], // Store products here
+  products: JSON.parse(localStorage.getItem("products") || "[]"),
+  likedProducts: JSON.parse(localStorage.getItem("likedProducts") || "[]"),
 };
 
 const productSlice = createSlice({
@@ -22,26 +24,30 @@ const productSlice = createSlice({
   initialState,
   reducers: {
     setProducts(state, action: PayloadAction<Product[]>) {
-      // Merge new fetched products with existing ones
-      const fetchedProducts = action.payload;
-      const existingProductIds = state.products.map((p) => p.id);
+      state.products = action.payload;
+      localStorage.setItem("products", JSON.stringify(state.products)); // Save to localStorage
+    },
+    toggleLike(state, action: PayloadAction<number>) {
+      const productId = action.payload;
+      if (state.likedProducts.includes(productId)) {
+        state.likedProducts = state.likedProducts.filter((id) => id !== productId);
+      } else {
+        state.likedProducts.push(productId);
+      }
+      localStorage.setItem("likedProducts", JSON.stringify(state.likedProducts)); // Save likedProducts to localStorage
 
-      // Add only new products that aren't already in the state
-      const newProducts = fetchedProducts.filter(
-        (p) => !existingProductIds.includes(p.id)
-      );
-
-      state.products = [...state.products, ...newProducts];
     },
     addProduct(state, action: PayloadAction<Product>) {
-      state.products = [{ ...action.payload, isCreated: true }, ...state.products];
+      const newProduct = { ...action.payload, isCreated: true }; // Set `isCreated` flag
+      state.products.push(newProduct);
+      localStorage.setItem("products", JSON.stringify(state.products)); // Save to localStorage
     },
     deleteProduct(state, action: PayloadAction<number>) {
-      state.products = state.products.filter(
-        (product) => product.id !== action.payload
-      );
+      state.products = state.products.filter((product) => product.id !== action.payload);
+      localStorage.setItem("products", JSON.stringify(state.products)); // Save to localStorage
     },
-  }
+  },
 });
-export const { setProducts, addProduct, deleteProduct } = productSlice.actions;
+
+export const { setProducts, addProduct, toggleLike, deleteProduct } = productSlice.actions;
 export default productSlice.reducer;

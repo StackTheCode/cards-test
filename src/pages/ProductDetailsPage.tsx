@@ -1,7 +1,7 @@
 import { useParams, useNavigate} from "react-router-dom"
 import { useState,useEffect } from "react";
 import React from "react";
-
+import { fetchProducts } from "../../util/productService";
 interface Product {
   id: number;
   title: string;
@@ -18,24 +18,7 @@ const ProductDetailsPage:React.FC  = () => {
 
 
   useEffect(() => {
-    const fetchProducts= async() =>{
-      try {
-        const response = await fetch(`https://fakestoreapi.com/products/${id}`);
-        
-        const data =await response.json();
-        setProduct(data)
-        if(!response.ok){
-          throw new Error("Fetching failure")
-        }
     
-      } catch (error) { 
-       console.log(error)
-      }
-      finally{
-        setLoading(false)
-      }
-
-    }
     
   fetchProducts();
   }, []);

@@ -32,7 +32,7 @@ const CreateProductPage: React.FC = () => {
         price: parseFloat(values.price),
         description: values.description,
         image: values.image,
-        created:true
+        isCreated:true
       };
 
         // Dispatch to add the product
